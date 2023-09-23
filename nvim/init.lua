@@ -7,3 +7,5 @@ require("yattew.plugins.lualine")
 require("yattew.plugins.telescope") -- install ripgrep if live grep, etc is not working
 require("yattew.plugins.lsp-lua")
 require("yattew.plugins.tresitter")
+require("yattew.plugins.null-ls")
+require("yattew.plugins.prettier")

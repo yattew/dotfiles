@@ -58,6 +58,9 @@ return packer.startup(function(use)
         run = ':TSUpdate'
     }
     use("jiangmiao/auto-pairs")
+    use('neovim/nvim-lspconfig')
+    use('jose-elias-alvarez/null-ls.nvim')
+    use('MunifTanjim/prettier.nvim')
     if packer_bootstrap then
         require("packer").sync()
     end
