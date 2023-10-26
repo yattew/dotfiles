@@ -30,12 +30,14 @@ return packer.startup(function(use)
     use("nvim-lua/plenary.nvim")
     use("wbthomason/packer.nvim")
     -- use("bluz71/vim-nightfly-guicolors")
-    use("ellisonleao/gruvbox.nvim")
+    --use ('Mofiqul/dracula.nvim')
+    use { "ellisonleao/gruvbox.nvim" }
     use("christoomey/vim-tmux-navigator")
     use("nvim-tree/nvim-tree.lua")
     use("kyazdani42/nvim-web-devicons")
     use("nvim-lualine/lualine.nvim")
-    use({"nvim-telescope/telescope-fzf-native.nvim", run = "make"}) -- dependency for telescope
+--    use({"nvim-telescope/telescope-fzf-native.nvim", run = "make"}) -- dependency for telescope
+    use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
     use({"nvim-telescope/telescope.nvim", branch = "0.1.x"})
     use {
       'VonHeikemen/lsp-zero.nvim',
@@ -53,6 +55,12 @@ return packer.startup(function(use)
         {'L3MON4D3/LuaSnip'},
       }
     }
+    use({
+        "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+        config = function()
+            require("lsp_lines").setup()
+                end,
+        })
     use {
         'nvim-treesitter/nvim-treesitter',
         run = ':TSUpdate'
