@@ -10,7 +10,7 @@ vim.diagnostic.config({
 })
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'tsserver', 'rust_analyzer', 'lua_ls', 'gopls'},
+  ensure_installed = {'tsserver', 'rust_analyzer', 'lua_ls', 'gopls', 'clangd', 'ocamllsp'},
   handlers = {
     lsp_zero.default_setup,
   },
