@@ -84,11 +84,6 @@ _G.packer_plugins = {
     path = "/home/yattew/.local/share/nvim/site/pack/packer/start/auto-pairs",
     url = "https://github.com/jiangmiao/auto-pairs"
   },
-  ["black.nvim"] = {
-    loaded = true,
-    path = "/home/yattew/.local/share/nvim/site/pack/packer/start/black.nvim",
-    url = "https://github.com/alexanderbluhm/black.nvim"
-  },
   ["cmp-nvim-lsp"] = {
     loaded = true,
     path = "/home/yattew/.local/share/nvim/site/pack/packer/start/cmp-nvim-lsp",
