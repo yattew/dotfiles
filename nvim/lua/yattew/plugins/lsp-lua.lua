@@ -9,12 +9,13 @@ end)
 --  virtual_text = false,
 --})
 vim.diagnostic.config({
-  virtual_text = false,
+  virtual_text = true,
 })
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'tsserver', 'rust_analyzer', 'lua_ls', 'gopls', 'clangd', 'ocamllsp'},
+  ensure_installed = {'tsserver', 'rust_analyzer', 'lua_ls', 'gopls', 'clangd', 'ocamllsp', 'html', 'templ'},
   handlers = {
     lsp_zero.default_setup,
   },
 })
+

@@ -44,7 +44,6 @@ return packer.startup(function(use)
     --    use({"nvim-telescope/telescope-fzf-native.nvim", run = "make"}) -- dependency for telescope
     use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
     use({ "nvim-telescope/telescope.nvim", branch = "0.1.x" })
-    -- ocaml stuff
 
     use {
         'VonHeikemen/lsp-zero.nvim',
@@ -76,6 +75,7 @@ return packer.startup(function(use)
     use('neovim/nvim-lspconfig')
     use('jose-elias-alvarez/null-ls.nvim')
     use('MunifTanjim/prettier.nvim')
+    use('ThePrimeagen/vim-be-good')
     if packer_bootstrap then
         require("packer").sync()
     end
