@@ -1,25 +1,30 @@
 vim.g.mapleader = " "
-
 -- keymaps --
 local keymap = vim.keymap
-keymap.set("i", "jk", "<ESC>")                                 -- jk to exit inset mode
+keymap.set("i", "jk", "<ESC>")                 -- jk to exit inset mode
 keymap.set("i", "<C-l>", "<right>")
-keymap.set("n", "<leader>nh", ":nohl<CR>")                     -- nh to clear the search highlights
-keymap.set("n", "x", "x")                                      -- delete a character but don't copy it to the register
-keymap.set("n", "<leader>sv", "<C-w>v")                        -- split window vertically
-keymap.set("n", "<leader>sh", "<C-w>s")                        -- split window horizontally
-keymap.set("n", "<leader>sx", ":close<CR>")                    -- close a split window
-keymap.set("n", "<leader>to", ":tabnew<CR>")                   -- open a new tab
-keymap.set("n", "<leader>tx", ":tabclose<CR>")                 -- close current tab
-keymap.set("n", "<leader>tn", ":tabn<CR>")                     -- move to next tab
-keymap.set("n", "<leader>tp", ":tabp<CR>")                     -- move to previous tab
-keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")            -- toggle nvim-tree
-keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>") -- find files
-keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>")
-keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>")
-keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
-keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>")
-keymap.set("n", "<leader>fmt", ":lua vim.lsp.buf.format()<CR>") -- format open buffer
+keymap.set("n", "<leader>nh", ":nohl<CR>")     -- nh to clear the search highlights
+keymap.set("n", "x", "x")                      -- delete a character but don't copy it to the register
+keymap.set("n", "<leader>sv", "<C-w>v")        -- split window vertically
+keymap.set("n", "<leader>sh", "<C-w>s")        -- split window horizontally
+keymap.set("n", "<leader>sx", ":close<CR>")    -- close a split window
+keymap.set("n", "<leader>to", ":tabnew<CR>")   -- open a new tab
+keymap.set("n", "<leader>tx", ":tabclose<CR>") -- close current tab
+keymap.set("n", "<leader>tn", ":tabn<CR>")     -- move to next tab
+keymap.set("n", "<leader>tp", ":tabp<CR>")     -- move to previous tab
+function diagnostic_window()
+    local opts = {
+        focusable = true,
+        border = "rounded",
+        source = "always",
+        prefix = " ",
+        scope = "line",
+        severit_sort = true,
+    }
+    vim.diagnostic.open_float(opts)
+end
+
+keymap.set("n", "gl", ":lua diagnostic_window()<CR>")
 -- keymaps end --
 
 -- options --
@@ -95,10 +100,9 @@ plugins = {
         build = ":TSUpdate",
         opts = {
             ensure_installed = { "c", "lua", "vim", "vimdoc", "query" },
-            auto_install = false,
+            auto_install = true,
             highlight = {
                 enable = true,
-                disable = {},
                 disable = function(lang, buf)
                     local max_filesize = 100 * 1024 -- 100 KB
                     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
@@ -159,6 +163,7 @@ plugins = {
         init = function()
             vim.g.loaded = 1
             vim.g.loaded_netrwPlugin = 1
+            keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>") -- toggle nvim-tree
         end,
     },
     { "kyazdani42/nvim-web-devicons" },
@@ -200,34 +205,22 @@ plugins = {
             })
 
             telescope.load_extension("fzf")
+            keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>") -- find files
+            keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>")
+            keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>")
+            keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
+            keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>")
         end,
     },
+    { "jiangmiao/auto-pairs" },
+    -- lsp stuff
     {
-        "VonHeikemen/lsp-zero.nvim",
+        "williamboman/mason-lspconfig.nvim",
         dependencies = {
-            { "williamboman/mason.nvim" },
-            { "williamboman/mason-lspconfig.nvim" },
-
-            -- LSP Support
-            {
-                "neovim/nvim-lspconfig",
-            },
-            -- Autocompletion
-            { "hrsh7th/nvim-cmp" },
-            { "hrsh7th/cmp-nvim-lsp" },
-            { "L3MON4D3/LuaSnip" },
+            "williamboman/mason.nvim",
         },
         config = function()
-            local lsp_zero = require("lsp-zero")
-            lsp_zero.on_attach(function(client, bufnr)
-                -- see :help lsp-zero-keybindings
-                -- to learn the available actions
-                lsp_zero.default_keymaps({ buffer = bufnr })
-            end)
-            vim.diagnostic.config({
-                virtual_text = true,
-            })
-            require("mason").setup({})
+            require("mason").setup()
             require("mason-lspconfig").setup({
                 ensure_installed = {
                     "tsserver",
@@ -238,26 +231,138 @@ plugins = {
                     "ocamllsp",
                     "html",
                     "templ",
-                },
-                handlers = {
-                    lsp_zero.default_setup,
+                    "pylsp",
                 },
             })
+        end,
+    },
+    {
+        "neovim/nvim-lspconfig",
+        config = function()
+            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            local lspconfig = require("lspconfig")
+            lspconfig.tsserver.setup({ capabilities = capabilities })
+            lspconfig.rust_analyzer.setup({ capabilities = capabilities })
+            lspconfig.lua_ls.setup({
+                root_dir = function(fname)
+                    local util = require("lspconfig.util")
+                    local root_files = {
+                        ".luarc.json",
+                        ".luacheckrc",
+                        ".stylua.toml",
+                        "selene.toml",
+                        "init.lua",
+                    }
+                    local git_ancestor = util.find_git_ancestor(fname)
+                    print(git_ancestor)
+                    return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname)
+                end,
+                capabilities = capabilities,
+            })
+            lspconfig.gopls.setup({ capabilities = capabilities })
+            lspconfig.clangd.setup({
+                capabilities = capabilities,
+                cmd = {
+                    "clangd",
+                    "--offset-encoding=utf-16",
+                },
+            })
+            lspconfig.ocamllsp.setup({ capabilities = capabilities })
+            lspconfig.html.setup({ capabilities = capabilities })
+            lspconfig.templ.setup({ capabilities = capabilities })
+            lspconfig.pylsp.setup({ capabilities = capabilities })
+            vim.keymap.set("n", "gD", vim.lsp.buf.declaration, {})
+            vim.keymap.set("n", "gd", vim.lsp.buf.definition, {})
+            vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
+            vim.keymap.set("n", "gr", vim.lsp.buf.references, {})
+            vim.keymap.set("n", "gi", vim.lsp.buf.implementation, {})
+            vim.keymap.set({ "n", "v" }, "<space>ca", vim.lsp.buf.code_action, {})
         end,
     },
     {
         "nvimtools/none-ls.nvim",
         config = function()
             local null_ls = require("null-ls")
+
             null_ls.setup({
                 sources = {
                     null_ls.builtins.formatting.stylua,
                     null_ls.builtins.completion.spell,
                 },
             })
+            keymap.set("n", "<leader>fmt", ":lua vim.lsp.buf.format()<CR>") -- format open buffer
         end,
     },
-    { "jiangmiao/auto-pairs" },
+    {
+        "L3MON4D3/LuaSnip",
+        dependencies = {
+            "saadparwaiz1/cmp_luasnip",
+            "rafamadriz/friendly-snippets",
+        },
+    },
+    {
+        "hrsh7th/cmp-nvim-lsp",
+    },
+    {
+        "hrsh7th/nvim-cmp",
+        config = function()
+            local cmp = require("cmp")
+            require("luasnip.loaders.from_vscode").lazy_load()
+            cmp.setup({
+                snippet = {
+                    expand = function(args)
+                        require("luasnip").lsp_expand(args.body) -- For `luasnip` users.
+                    end,
+                },
+                window = {
+                    completion = cmp.config.window.bordered(),
+                    documentation = cmp.config.window.bordered(),
+                },
+
+                mapping = cmp.mapping.preset.insert({
+                    ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+                    ["<C-f>"] = cmp.mapping.scroll_docs(4),
+                    ["<C-Space>"] = cmp.mapping.complete(),
+                    ["<C-e>"] = cmp.mapping.abort(),
+                    ["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+                }),
+                sources = cmp.config.sources({
+                    { name = "nvim_lsp" },
+                    { name = "luasnip" }, -- For luasnip users.
+                }, {
+                    { name = "buffer" },
+                }),
+            })
+
+            -- Set configuration for specific filetype.
+            cmp.setup.filetype("gitcommit", {
+                sources = cmp.config.sources({
+                    --{ name = "git" }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
+                }, {
+                    { name = "buffer" },
+                }),
+            })
+
+            -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline({ "/", "?" }, {
+                mapping = cmp.mapping.preset.cmdline(),
+                sources = {
+                    { name = "buffer" },
+                },
+            })
+
+            -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline(":", {
+                mapping = cmp.mapping.preset.cmdline(),
+                sources = cmp.config.sources({
+                    { name = "path" },
+                }, {
+                    { name = "cmdline" },
+                }),
+                matching = { disallow_symbol_nonprefix_matching = false },
+            })
+        end,
+    },
 }
 -- plugins end --
 
