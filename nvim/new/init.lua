@@ -1,4 +1,8 @@
 vim.g.mapleader = " "
+
+--vim.cmd "set list"
+--vim.cmd "set listchars=eol:↵,trail:~,tab:>-,nbsp:␣"
+
 -- keymaps --
 local keymap = vim.keymap
 keymap.set("i", "jk", "<ESC>")                 -- jk to exit inset mode
@@ -6,7 +10,7 @@ keymap.set("i", "<C-l>", "<right>")
 keymap.set("n", "<leader>nh", ":nohl<CR>")     -- nh to clear the search highlights
 keymap.set("n", "x", "x")                      -- delete a character but don't copy it to the register
 keymap.set("n", "<leader>sv", "<C-w>v")        -- split window vertically
-keymap.set("n", "<leader>sh", "<C-w>s")        -- split window horizontally
+keymap.set("n", "<leader>sh", "<c-w>s")        -- split window horizontally
 keymap.set("n", "<leader>sx", ":close<CR>")    -- close a split window
 keymap.set("n", "<leader>to", ":tabnew<CR>")   -- open a new tab
 keymap.set("n", "<leader>tx", ":tabclose<CR>") -- close current tab
@@ -29,30 +33,20 @@ keymap.set("n", "gl", ":lua diagnostic_window()<CR>")
 
 -- options --
 local opt = vim.opt
--- line numbers
 opt.relativenumber = true
 opt.number = true
--- tabs & indentation
 opt.tabstop = 4
 opt.shiftwidth = 4
 opt.expandtab = true
 opt.autoindent = true
--- line wrapping
--- opt.wrap = false
--- search settings
 opt.ignorecase = true
 opt.smartcase = true
--- cursor line
 opt.cursorline = true
--- appearance
 opt.termguicolors = true
 opt.background = "dark"
 opt.signcolumn = "yes"
--- backspace
 opt.backspace = "indent,eol,start"
--- clipboard
 opt.clipboard:append("unnamedplus")
---split windows
 opt.splitright = true
 opt.splitbelow = true
 opt.iskeyword:append("-")
@@ -60,7 +54,7 @@ opt.guicursor = ""
 -- options end --
 
 -- plugins  --
-plugins = {
+local plugins = {
     {
         "ellisonleao/gruvbox.nvim",
         lazy = false,
@@ -83,7 +77,7 @@ plugins = {
             invert_tabline = false,
             invert_intend_guides = false,
             inverse = true, -- invert background for search, diffs, statuslines and errors
-            contrast = "", -- can be "hard", "soft" or empty string
+            contrast = "",  -- can be "hard", "soft" or empty string
             palette_overrides = {
                 dark0 = "#1D2021",
             },
@@ -119,8 +113,6 @@ plugins = {
                     templ = "templ",
                 },
             })
-
-            -- Make sure we have a tree-sitter grammar for the language
             local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
             treesitter_parser_config.templ = treesitter_parser_config.templ
                 or {
@@ -130,21 +122,6 @@ plugins = {
                         branch = "master",
                     },
                 }
-
-            vim.treesitter.language.register("templ", "templ")
-
-            -- Register the LSP as a config
-            local configs = require("lspconfig.configs")
-            if not configs.templ then
-                configs.templ = {
-                    default_config = {
-                        cmd = { "templ", "lsp" },
-                        filetypes = { "templ" },
-                        root_dir = require("lspconfig.util").root_pattern("go.mod", ".git"),
-                        settings = {},
-                    },
-                }
-            end
         end,
     },
     { "nvim-lua/plenary.nvim" },
@@ -182,16 +159,8 @@ plugins = {
             },
         },
         config = function()
-            local telescope_setup, telescope = pcall(require, "telescope")
-            if not telescope_setup then
-                return
-            end
-
-            local actions_setup, actions = pcall(require, "telescope.actions")
-            if not actions_setup then
-                return
-            end
-
+            local telescope = require("telescope")
+            local actions = require("telescope.actions")
             telescope.setup({
                 defaults = {
                     mappings = {
@@ -213,12 +182,9 @@ plugins = {
         end,
     },
     { "jiangmiao/auto-pairs" },
-    -- lsp stuff
     {
         "williamboman/mason-lspconfig.nvim",
-        dependencies = {
-            "williamboman/mason.nvim",
-        },
+        dependencies = { "williamboman/mason.nvim" },
         config = function()
             require("mason").setup()
             require("mason-lspconfig").setup({
@@ -253,8 +219,6 @@ plugins = {
                         "selene.toml",
                         "init.lua",
                     }
-                    local git_ancestor = util.find_git_ancestor(fname)
-                    print(git_ancestor)
                     return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname)
                 end,
                 capabilities = capabilities,
@@ -276,14 +240,12 @@ plugins = {
             vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
             vim.keymap.set("n", "gr", vim.lsp.buf.references, {})
             vim.keymap.set("n", "gi", vim.lsp.buf.implementation, {})
-            vim.keymap.set({ "n", "v" }, "<space>ca", vim.lsp.buf.code_action, {})
         end,
     },
     {
         "nvimtools/none-ls.nvim",
         config = function()
             local null_ls = require("null-ls")
-
             null_ls.setup({
                 sources = {
                     null_ls.builtins.formatting.stylua,
@@ -300,9 +262,7 @@ plugins = {
             "rafamadriz/friendly-snippets",
         },
     },
-    {
-        "hrsh7th/cmp-nvim-lsp",
-    },
+    { "hrsh7th/cmp-nvim-lsp" },
     {
         "hrsh7th/nvim-cmp",
         config = function()
@@ -333,8 +293,6 @@ plugins = {
                     { name = "buffer" },
                 }),
             })
-
-            -- Set configuration for specific filetype.
             cmp.setup.filetype("gitcommit", {
                 sources = cmp.config.sources({
                     --{ name = "git" }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
@@ -342,16 +300,12 @@ plugins = {
                     { name = "buffer" },
                 }),
             })
-
-            -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
             cmp.setup.cmdline({ "/", "?" }, {
                 mapping = cmp.mapping.preset.cmdline(),
                 sources = {
                     { name = "buffer" },
                 },
             })
-
-            -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
             cmp.setup.cmdline(":", {
                 mapping = cmp.mapping.preset.cmdline(),
                 sources = cmp.config.sources({
@@ -363,6 +317,17 @@ plugins = {
             })
         end,
     },
+    {
+        "kylechui/nvim-surround",
+        version = "*", -- Use for stability; omit to use `main` branch for the latest features
+        event = "VeryLazy",
+        config = function() require("nvim-surround").setup({}) end
+    },
+    {
+        'numToStr/Comment.nvim',
+        lazy = false,
+        config = function() require("Comment").setup() end
+    }
 }
 -- plugins end --
 
