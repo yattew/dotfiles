@@ -1,7 +1,7 @@
 vim.g.mapleader = " "
 
---vim.cmd "set list"
---vim.cmd "set listchars=eol:↵,trail:~,tab:>-,nbsp:␣"
+vim.cmd("set list")
+vim.cmd("set listchars=trail:~,tab:>-,nbsp:␣")
 
 -- keymaps --
 local keymap = vim.keymap
@@ -16,6 +16,9 @@ keymap.set("n", "<leader>to", ":tabnew<CR>") -- open a new tab
 keymap.set("n", "<leader>tx", ":tabclose<CR>") -- close current tab
 keymap.set("n", "<leader>tn", ":tabn<CR>") -- move to next tab
 keymap.set("n", "<leader>tp", ":tabp<CR>") -- move to previous tab
+keymap.set("n", "K", "") -- move to previous tab
+-- keymaps end --
+
 function diagnostic_window()
 	local opts = {
 		focusable = true,
@@ -28,8 +31,24 @@ function diagnostic_window()
 	vim.diagnostic.open_float(opts)
 end
 
+-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+--     border = "rounded",
+--
+-- })
+
+local set_hl_for_floating_window = function()
+	vim.api.nvim_set_hl(0, "NormalFloat", {
+		link = "Normal",
+	})
+end
+
+set_hl_for_floating_window()
+vim.api.nvim_create_autocmd("ColorScheme", {
+	pattern = "*",
+	desc = "Avoid overwritten by loading color schemes later",
+	callback = set_hl_for_floating_window,
+})
 keymap.set("n", "gl", ":lua diagnostic_window()<CR>")
--- keymaps end --
 
 -- options --
 local opt = vim.opt
@@ -78,9 +97,7 @@ local plugins = {
 			invert_intend_guides = false,
 			inverse = true, -- invert background for search, diffs, statuslines and errors
 			contrast = "", -- can be "hard", "soft" or empty string
-			palette_overrides = {
-				dark0 = "#1D2021",
-			},
+			palette_overrides = {},
 			overrides = {},
 			dim_inactive = false,
 			transparent_mode = false,
@@ -107,22 +124,7 @@ local plugins = {
 				additional_vim_regex_highlighting = false,
 			},
 		},
-		init = function()
-			vim.filetype.add({
-				extension = {
-					templ = "templ",
-				},
-			})
-			local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-			treesitter_parser_config.templ = treesitter_parser_config.templ
-				or {
-					install_info = {
-						url = "https://github.com/vrischmann/tree-sitter-templ.git",
-						files = { "src/parser.c", "src/scanner.c" },
-						branch = "master",
-					},
-				}
-		end,
+		init = function() end,
 	},
 	{ "nvim-lua/plenary.nvim" },
 	{ "christoomey/vim-tmux-navigator" },
@@ -136,6 +138,9 @@ local plugins = {
 					},
 				},
 			},
+			view = {
+				relativenumber = true,
+			},
 		},
 		init = function()
 			vim.g.loaded = 1
@@ -143,7 +148,6 @@ local plugins = {
 			keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>") -- toggle nvim-tree
 		end,
 	},
-	{ "kyazdani42/nvim-web-devicons" },
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -156,6 +160,7 @@ local plugins = {
 				"nvim-telescope/telescope-fzf-native.nvim",
 				build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
 			},
+			{ "nvim-telescope/telescope-live-grep-args.nvim" },
 		},
 		config = function()
 			local telescope = require("telescope")
@@ -164,9 +169,8 @@ local plugins = {
 				defaults = {
 					mappings = {
 						i = {
-							["<C-k>"] = actions.move_selection_previous,
-							["<C-j>"] = actions.move_selection_next,
 							["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+							["<esc>"] = actions.close,
 						},
 					},
 				},
@@ -174,7 +178,8 @@ local plugins = {
 
 			telescope.load_extension("fzf")
 			keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>") -- find files
-			keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>")
+			-- keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>")
+			keymap.set("n", "<leader>fs", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
 			keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>")
 			keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
 			keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>")
@@ -188,15 +193,13 @@ local plugins = {
 			require("mason").setup()
 			require("mason-lspconfig").setup({
 				ensure_installed = {
-					"tsserver",
-					"rust_analyzer",
+					-- "tsserver",
 					"lua_ls",
 					"gopls",
 					"clangd",
-					"ocamllsp",
 					"html",
-					"templ",
-					"pylsp",
+					"jedi_language_server",
+					-- "pylsp",
 				},
 			})
 		end,
@@ -233,7 +236,7 @@ local plugins = {
 			lspconfig.ocamllsp.setup({ capabilities = capabilities })
 			lspconfig.html.setup({ capabilities = capabilities })
 			lspconfig.templ.setup({ capabilities = capabilities })
-			lspconfig.pylsp.setup({ capabilities = capabilities })
+			lspconfig.jedi_language_server.setup({ capabilities = capabilities })
 			vim.keymap.set("n", "gD", vim.lsp.buf.declaration, {})
 			vim.keymap.set("n", "gd", vim.lsp.buf.definition, {})
 			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
@@ -247,11 +250,16 @@ local plugins = {
 			local null_ls = require("null-ls")
 			null_ls.setup({
 				sources = {
+					null_ls.builtins.formatting.prettier.with({}),
 					null_ls.builtins.formatting.stylua,
-					null_ls.builtins.completion.spell,
+					null_ls.builtins.formatting.black,
+					-- null_ls.builtins.completion.spell,
 				},
 			})
-			keymap.set("n", "<leader>fmt", ":lua vim.lsp.buf.format()<CR>") -- format open buffer
+			keymap.set("n", "<leader>fmt", function()
+				vim.lsp.buf.format()
+			end)
+			-- keymap.set("n", "<leader>fmt", ":lua vim.lsp.buf.format()<CR>") -- format open buffer
 		end,
 	},
 	{
@@ -267,6 +275,7 @@ local plugins = {
 		dependencies = {
 			"hrsh7th/cmp-cmdline",
 			"hrsh7th/cmp-buffer",
+			"hrsh7th/cmp-nvim-lsp-signature-help",
 		},
 		config = function()
 			local cmp = require("cmp")
@@ -287,17 +296,12 @@ local plugins = {
 					["<C-f>"] = cmp.mapping.scroll_docs(4),
 					["<C-Space>"] = cmp.mapping.complete(),
 					["<C-e>"] = cmp.mapping.abort(),
-					["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+					["<CR>"] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
 				}),
 				sources = cmp.config.sources({
 					{ name = "nvim_lsp" },
 					{ name = "luasnip" }, -- For luasnip users.
-				}, {
-					{ name = "buffer" },
-				}),
-			})
-			cmp.setup.filetype("gitcommit", {
-				sources = cmp.config.sources({
+					{ name = "nvim_lsp_signature_help" },
 					--{ name = "git" }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
 				}, {
 					{ name = "buffer" },
@@ -318,6 +322,8 @@ local plugins = {
 				}),
 				matching = { disallow_symbol_nonprefix_matching = false },
 			})
+			cmp.visible_docs()
+			-- vim.cmd(':set winhighlight=' .. cmp.config.window.bordered().winhighlight)
 		end,
 	},
 	{
@@ -335,10 +341,129 @@ local plugins = {
 			require("Comment").setup()
 		end,
 	},
+	{
+		"lewis6991/hover.nvim",
+		config = function()
+			require("hover").setup({
+				init = function()
+					-- Require providers
+					require("hover.providers.lsp")
+					-- require('hover.providers.gh')
+					-- require('hover.providers.gh_user')
+					-- require('hover.providers.jira')
+					-- require('hover.providers.dap')
+					-- require('hover.providers.fold_preview')
+					require("hover.providers.diagnostic")
+					require("hover.providers.man")
+					-- require('hover.providers.dictionary')
+				end,
+				preview_opts = {
+					border = "single",
+				},
+				-- Whether the contents of a currently open hover window should be moved
+				-- to a :h preview-window when pressing the hover keymap.
+				preview_window = true,
+				title = true,
+				mouse_providers = {
+					-- 'LSP'
+				},
+				mouse_delay = 1000,
+			})
+
+			-- Setup keymaps
+			vim.keymap.set("n", "K", require("hover").hover, { desc = "hover.nvim" })
+			vim.keymap.set("n", "gK", require("hover").hover_select, { desc = "hover.nvim (select)" })
+			vim.keymap.set("n", "<C-p>", function()
+				require("hover").hover_switch("previous")
+			end, { desc = "hover.nvim (previous source)" })
+			vim.keymap.set("n", "<C-n>", function()
+				require("hover").hover_switch("next")
+			end, { desc = "hover.nvim (next source)" })
+
+			-- Mouse support
+			vim.keymap.set("n", "<MouseMove>", require("hover").hover_mouse, { desc = "hover.nvim (mouse)" })
+			vim.o.mousemoveevent = true
+		end,
+	},
+	{ "github/copilot.vim" },
+	{
+		"MunifTanjim/prettier.nvim",
+		config = function()
+			local prettier = require("prettier")
+
+			prettier.setup({
+				["null-ls"] = {
+					condition = function()
+						return prettier.config_exists({
+							-- if `false`, skips checking `package.json` for `"prettier"` key
+							check_package_json = true,
+						})
+					end,
+					runtime_condition = function(params)
+						-- return false to skip running prettier
+						return true
+					end,
+					timeout = 5000,
+				},
+			})
+		end,
+	},
+	{
+		"ThePrimeagen/harpoon",
+		branch = "harpoon2",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		config = function()
+			local harpoon = require("harpoon") -- basic telescope configuration
+			local conf = require("telescope.config").values
+			local function toggle_telescope(harpoon_files)
+				local file_paths = {}
+				for _, item in ipairs(harpoon_files.items) do
+					table.insert(file_paths, item.value)
+				end
+
+				require("telescope.pickers")
+					.new({}, {
+						prompt_title = "Harpoon",
+						finder = require("telescope.finders").new_table({
+							results = file_paths,
+						}),
+						previewer = conf.file_previewer({}),
+						sorter = conf.generic_sorter({}),
+					})
+					:find()
+			end
+
+			vim.keymap.set("n", "<C-e>", function()
+				toggle_telescope(harpoon:list())
+			end, { desc = "Open harpoon window" })
+
+			-- REQUIRED
+			harpoon:setup()
+			-- REQUIRED
+
+			vim.keymap.set("n", "<leader>a", function()
+				harpoon:list():add()
+			end)
+
+			-- Toggle previous & next buffers stored within Harpoon list
+			vim.keymap.set("n", "<C-S-P>", function()
+				harpoon:list():prev()
+			end)
+			vim.keymap.set("n", "<C-S-N>", function()
+				harpoon:list():next()
+			end)
+		end,
+	},
+	{
+		"mbbill/undotree",
+		config = function()
+			vim.keymap.set("n", "<leader>ut", vim.cmd.UndotreeToggle)
+		end,
+	},
+	{ "tpope/vim-fugitive" },
 }
 -- plugins end --
 
--- lazy.nvim --
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	vim.fn.system({
@@ -350,6 +475,8 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 		lazypath,
 	})
 end
+-- lazy.nvim --
+
 vim.opt.rtp:prepend(lazypath)
 require("lazy").setup(plugins)
 -- lazy.nvim --
