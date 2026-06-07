@@ -106,7 +106,6 @@ return {
                 "jedi_language_server",
                 "elp",
                 "templ",
-                "erlangls",
                 },
                 automatic_installation = true,
         },
