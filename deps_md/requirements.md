@@ -34,6 +34,11 @@
    * `html` (HTML)
    * `templ` (Go templates)
 6. **Ollama**: Local AI assistant engine (requires `qwen2.5-coder:3b` model downloaded).
+7. **focus.nvim**: Auto-resizes active windows when splits are focused.
+8. **mini.animate**: Smoothly animates window resizing transitions.
+9. **rainbow-delimiters.nvim**: Adds colorful depth-based highlighting to nested brackets.
+10. **smear-cursor.nvim**: Adds a liquid smooth comet tail trailing effect to the cursor.
+11. **gitsigns.nvim**: Adds subtle git diff indicators to the sign column.
 
 ---
 
@@ -52,7 +57,9 @@
 
 ### 📂 Config Files to Stow:
 * `~/.aerospace.toml`
+* `~/.config/borders/bordersrc` (JankyBorders config)
 
 ### 🛠️ Required Dependencies:
-* **AeroSpace**: i3-like window manager app for macOS.
+1. **AeroSpace**: i3-like window manager app for macOS.
+2. **JankyBorders**: Draws beautiful colored borders around active windows (`brew tap FelixKratz/formulae && brew install borders`).
 

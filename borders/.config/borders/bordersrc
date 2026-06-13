@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Rose-Pine Colors
+# Base: 0xff191724
+# Surface: 0xff1f1d2e
+# Overlay: 0xff26233a
+# Muted: 0xff6e6a86
+# Subtle: 0xff908caa
+# Text: 0xffe0def4
+# Love: 0xffeb6f92
+# Gold: 0xfff6c177
+# Rose: 0xffebbcba
+# Pine: 0xff31748f
+# Foam: 0xff9ccfd8
+# Iris: 0xffc4a7e7
+
+options=(
+  style=round
+  width=5.0
+  hidpi=off
+  active_color=0xffc4a7e7    # Iris (Purple)
+  inactive_color=0xff26233a  # Overlay
+)
+
+borders "${options[@]}"

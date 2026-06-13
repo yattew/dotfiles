@@ -49,4 +49,65 @@ return {
 
     -- Smooth Scrolling
     { "psliwka/vim-smoothie" },
+
+    -- Auto-focus and resize split windows
+    {
+        "beauwilliams/focus.nvim",
+        config = function()
+            require("focus").setup({
+                enable = true,
+                commands = true,
+                autoresize = {
+                    enable = true,
+                    width = 0, -- Calculates based on Golden Ratio
+                    height = 0,
+                    min_width = 80, -- Minimum width of active split
+                    min_height = 10,
+                },
+                ui = {
+                    number = false, -- Don't let focus manage line numbers
+                    relativenumber = false,
+                    hybridnumber = false,
+                    cursorline = true, -- Highlight active window cursorline
+                    signcolumn = true,
+                }
+            })
+        end,
+    },
+
+    -- Smooth window resizing animation
+    {
+        "echasnovski/mini.animate",
+        event = "VeryLazy",
+        config = function()
+            local animate = require("mini.animate")
+            animate.setup({
+                resize = {
+                    enable = true,
+                    timing = animate.gen_timing.linear({ duration = 150, unit = "total" }),
+                },
+                cursor = { enable = false },
+                scroll = { enable = false },
+                open = { enable = false },
+                close = { enable = false },
+            })
+        end,
+    },
+
+    -- Colorful Rainbow Brackets
+    {
+        "HiPhish/rainbow-delimiters.nvim",
+        event = "VeryLazy",
+    },
+
+    -- Liquid smooth cursor smear effect
+    {
+        "sphamba/smear-cursor.nvim",
+        opts = {
+            stiffness = 0.8,               -- 0.1 (loose) to 1.0 (strict)
+            trailing_stiffness = 0.5,      -- 0.1 (loose) to 1.0 (strict)
+            distance_stop_animating = 0.5, 
+        },
+    },
+
 }
