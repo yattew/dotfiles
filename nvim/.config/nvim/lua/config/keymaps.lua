@@ -41,3 +41,21 @@ function diagnostic_window()
     vim.diagnostic.open_float(opts)
 end
 keymap.set("n", "gl", diagnostic_window, { desc = "Open diagnostic window" })
+
+-- Herdr Smart Navigation
+local function herdr_navigate(dir_vim, dir_herdr)
+    local cur_win = vim.api.nvim_get_current_win()
+    vim.cmd("wincmd " .. dir_vim)
+    if vim.api.nvim_get_current_win() == cur_win then
+        if vim.env.HERDR_SOCKET_PATH then
+            vim.fn.system("herdr pane focus --direction " .. dir_herdr)
+        elseif vim.env.TMUX then
+            local dir_tmux = dir_vim == "h" and "L" or dir_vim == "j" and "D" or dir_vim == "k" and "U" or "R"
+            vim.fn.system("tmux select-pane -" .. dir_tmux)
+        end
+    end
+end
+keymap.set("n", "<C-h>", function() herdr_navigate("h", "left") end, { silent = true })
+keymap.set("n", "<C-j>", function() herdr_navigate("j", "down") end, { silent = true })
+keymap.set("n", "<C-k>", function() herdr_navigate("k", "up") end, { silent = true })
+keymap.set("n", "<C-l>", function() herdr_navigate("l", "right") end, { silent = true })

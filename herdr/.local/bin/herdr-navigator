@@ -1,0 +1,17 @@
+#!/bin/bash
+DIRECTION=$1
+PANE_INFO=$(herdr pane process-info --pane "$HERDR_ACTIVE_PANE_ID")
+
+if echo "$PANE_INFO" | grep -iqE '"name":"n?vim"'; then
+    if [ "$DIRECTION" = "left" ]; then
+        herdr pane send-keys "$HERDR_ACTIVE_PANE_ID" "ctrl+h"
+    elif [ "$DIRECTION" = "down" ]; then
+        herdr pane send-keys "$HERDR_ACTIVE_PANE_ID" "ctrl+j"
+    elif [ "$DIRECTION" = "up" ]; then
+        herdr pane send-keys "$HERDR_ACTIVE_PANE_ID" "ctrl+k"
+    elif [ "$DIRECTION" = "right" ]; then
+        herdr pane send-keys "$HERDR_ACTIVE_PANE_ID" "ctrl+l"
+    fi
+else
+    herdr pane focus --direction "$DIRECTION" --pane "$HERDR_ACTIVE_PANE_ID"
+fi
