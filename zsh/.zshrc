@@ -108,6 +108,7 @@ alias v="nvim"
 alias please="sudo"
 alias ls="eza --icons"
 alias cat="bat"
+alias python="python3"
 # export GOROOT=/usr/lib/go-1.19
 # export GOPATH=$HOME/go
 # pyenv stuff
