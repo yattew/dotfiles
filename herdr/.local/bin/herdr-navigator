@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Fetch the active pane process information
+PANE_INFO=$(herdr pane process-info)
+PANE_ID=$(echo "$PANE_INFO" | grep -Eo '"pane_id":"[^"]+"' | cut -d'"' -f4 | head -n1)
+
+# Check if Neovim is the foreground process
+if echo "$PANE_INFO" | grep -iqE '"name":"n?vim"'; then
+    # We are in Neovim. Pass the key directly to Neovim.
+    herdr pane send-keys "$PANE_ID" "ctrl+${1:0:1}"
+else
+    # We are outside of Neovim. Focus the adjacent Herdr pane.
+    herdr pane focus --direction "$1"
+fi
