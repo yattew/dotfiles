@@ -58,7 +58,7 @@ return {
                 enable = true,
                 commands = true,
                 autoresize = {
-                    enable = true,
+                    enable = false,
                     width = 0, -- Calculates based on Golden Ratio
                     height = 0,
                     min_width = 80, -- Minimum width of active split
