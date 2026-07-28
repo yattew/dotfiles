@@ -63,7 +63,8 @@ return {
         end,
     },
 
-    -- (vim-tmux-navigator removed in favor of native custom Herdr mapping)
+    -- Tmux Navigation
+    { "christoomey/vim-tmux-navigator" },
 
     -- Flash.nvim (jump navigation)
     {
