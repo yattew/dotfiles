@@ -63,28 +63,7 @@ return {
         end,
     },
 
-    -- Smart Navigation (replaces vim-tmux-navigator)
-    {
-        "mrjones2014/smart-splits.nvim",
-        config = function()
-            require("smart-splits").setup({
-                multiplexer_integration = "custom",
-                custom_multiplexer_api = {
-                    is_in_mux = function() return vim.env.HERDR_SOCKET_PATH ~= nil end,
-                    current_pane_id = function() return vim.env.HERDR_PANE_ID end,
-                    next_pane = function(direction)
-                        vim.system({"herdr", "pane", "focus", "--direction", direction})
-                    end,
-                },
-            })
-            local keymap = vim.keymap
-            keymap.set("n", "<C-h>", require("smart-splits").move_cursor_left)
-            keymap.set("n", "<C-j>", require("smart-splits").move_cursor_down)
-            keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up)
-            keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right)
-            keymap.set("n", "<C-\\>", require("smart-splits").move_cursor_previous)
-        end,
-    },
+
 
     -- Flash.nvim (jump navigation)
     {
