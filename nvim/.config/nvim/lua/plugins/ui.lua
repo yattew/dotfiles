@@ -51,6 +51,8 @@ return {
     { "psliwka/vim-smoothie" },
 
     -- Auto-focus and resize split windows
+    -- DISABLED: resize-to-larger-on-focus was misbehaving
+    --[[
     {
         "beauwilliams/focus.nvim",
         config = function()
@@ -58,7 +60,7 @@ return {
                 enable = true,
                 commands = true,
                 autoresize = {
-                    enable = false,
+                    enable = true,
                     width = 0, -- Calculates based on Golden Ratio
                     height = 0,
                     min_width = 80, -- Minimum width of active split
@@ -74,6 +76,7 @@ return {
             })
         end,
     },
+    --]]
 
     -- Smooth window resizing animation
     {

@@ -35,7 +35,6 @@ return {
 
             vim.lsp.config("erlangls", {
                 cmd = { "erlang_ls" },
-                filetypes = { "erlang" },
                 handlers = {
                     ["textDocument/publishDiagnostics"] = function() end, -- Mute all diagnostics from erlang_ls
                     ["window/showMessage"] = function(err, result, ctx, config)
@@ -61,14 +60,6 @@ return {
                 }
             })
 
-            vim.lsp.config("elp", {
-                filetypes = { "erlang" },
-            })
-
-            vim.lsp.config("elixirls", {
-                filetypes = { "elixir", "eelixir", "heex", "surface" },
-            })
-
             -- Enable servers
             local servers = {
                 "ts_ls",
@@ -81,7 +72,6 @@ return {
                 "jedi_language_server",
                 "elp",
                 "erlangls",
-                "elixirls",
             }
             for _, server in ipairs(servers) do
                 vim.lsp.enable(server)
@@ -116,7 +106,6 @@ return {
                 "jedi_language_server",
                 "elp",
                 "templ",
-                "elixirls",
                 },
                 automatic_installation = true,
         },
@@ -134,7 +123,6 @@ return {
                     lua = { "stylua" },
                     python = { "black" },
                     erlang = { "erlfmt" },
-                    elixir = { "mix" },
                 },
             })
 

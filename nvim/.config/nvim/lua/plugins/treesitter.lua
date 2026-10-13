@@ -1,11 +1,10 @@
 return {
     {
         "nvim-treesitter/nvim-treesitter",
-        branch = "master",
-        main = "nvim-treesitter.configs",
+        branch = "main",
         build = ":TSUpdate",
         opts = {
-            ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "html", "erlang", "elixir", "eex", "heex" },
+            ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "html", "erlang", "markdown", "markdown_inline" },
             auto_install = true,
             highlight = {
                 enable = true,
